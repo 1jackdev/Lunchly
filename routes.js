@@ -18,6 +18,28 @@ router.get("/", async function(req, res, next) {
   }
 });
 
+/** show list of top 10 customers. */
+
+router.get("/top/", async function(req, res, next) {
+  try {
+    const customers = await Customer.topTen();
+    return res.render("customer_list.html", { customers });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+/** show list of 10 upcoming reservations */
+router.get("/upcoming/", async function(req, res, next) {
+  try {
+    const reservations = await Reservation.getUpcomingReservations();
+    console.log(reservations)
+    return res.render("upcoming_reservations.html", { reservations });
+  } catch (err) {
+    return next(err);
+  }
+});
+
 /** Form to add a new customer. */
 
 router.get("/add/", async function(req, res, next) {
@@ -53,6 +75,7 @@ router.get("/:id/", async function(req, res, next) {
     const customer = await Customer.get(req.params.id);
 
     const reservations = await customer.getReservations();
+    console.log(reservations)
 
     return res.render("customer_detail.html", { customer, reservations });
   } catch (err) {

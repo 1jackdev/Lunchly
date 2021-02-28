@@ -14,6 +14,26 @@ class Customer {
     this.notes = notes;
   }
 
+  /** handle falsy notes attr */
+  set notes(val) {
+    if (val === false) {
+      this._notes = "";
+    } else {
+      this._notes = val;
+    }
+  }
+
+  /** get notes */
+  get notes() {
+    return this._notes;
+  }
+
+
+  /** get full name of customer */
+  get fullName() {
+    return this.firstName + " " + this.lastName;
+  }
+
   /** find all customers. */
 
   static async all() {
@@ -25,6 +45,24 @@ class Customer {
          notes
        FROM customers
        ORDER BY last_name, first_name`
+    );
+    return results.rows.map((c) => new Customer(c));
+  }
+
+  /** find top 10 customers */
+  static async topTen() {
+    const results = await db.query(
+      `SELECT c.id, 
+         c.first_name AS "firstName",  
+         c.last_name AS "lastName", 
+         c.phone, c.notes,
+         COUNT(r.id) as res_count
+       FROM customers AS c
+       LEFT JOIN reservations as r
+       ON c.id = r.customer_id
+       GROUP BY c.id
+       ORDER BY res_count DESC
+       LIMIT 10`
     );
     return results.rows.map((c) => new Customer(c));
   }
@@ -57,11 +95,6 @@ class Customer {
 
   async getReservations() {
     return await Reservation.getReservationsForCustomer(this.id);
-  }
-
-  /** get full name of customer */
-  fullName() {
-    return this.firstName + " " + this.lastName;
   }
 
   /** save this customer. */
